@@ -15,7 +15,7 @@ const userChema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    reqired: [true, 'Поле должно быть заполнено'],
+    required: [true, 'Поле должно быть заполнено'],
   },
 }, { versionKey: false });
 

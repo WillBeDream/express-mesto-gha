@@ -49,8 +49,9 @@ module.exports.editUserData = (req, res) => {
         res
           .status(ERR404)
           .send({ message: 'Пользователь по указанному id не найден' });
+      } else {
+        res.send({ data: user });
       }
-      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -72,8 +73,9 @@ module.exports.editUserAvatar = (req, res) => {
         res
           .status(ERR404)
           .send({ message: 'Пользователь по указанному id не найден' });
+      } else {
+        res.send({ data: user });
       }
-      res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
