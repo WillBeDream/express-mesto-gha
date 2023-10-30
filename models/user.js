@@ -23,8 +23,8 @@ const userChema = new mongoose.Schema({
     validate: {
       validator(url) {
         return urlRegex.test(url);
-      }
-    }
+      },
+    },
   },
   email: {
     type: String,
