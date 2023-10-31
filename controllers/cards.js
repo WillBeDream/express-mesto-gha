@@ -20,52 +20,40 @@ module.exports.addCard = (req, res, next) => {
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate(['owner', 'likes'])
     .then((cards) => res.send(cards))
     .catch(next);
 };
 
-// module.exports.deleteCard = (req, res, next) => {
-//   Card.findByIdAndRemove(req.params.cardId)
-//     .orFail()
-//     .then(() => {
-//       res.status(httpConstants.HTTP_STATUS_OK).send({ message: 'Карточка удалена' });
-//     })
-//     .catch((err) => {
-//       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-//         next(new NotFoundError(`карточка с таким id ${req.params.cardId} не найдена`));
-//       } else if (err instanceof mongoose.Error.CastError) {
-//         next(new BadRequestError(`некорректный id ${req.params.cardId}`));
-//       } else {
-//         next(err);
-//       }
-//     });
-// };
-
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then(((card) => {
-      if (!card.owner.equals(req.user._id)) {
-        throw new ForbiddenErrror('Карточка другого пользователя');
+      if (!card) {
+        next(new BadRequestError(`Неккоректный id карточки ${req.params.cardId}`));
+      } else {
+        if (!card.owner.equals(req.user._id)) {
+          throw new ForbiddenErrror('Карточка другого пользователя');
+        }
+        Card.deleteOne(card)
+          .orFail()
+          .then(() => {
+            res.status(httpConstants.HTTP_STATUS_OK).send({ message: 'Карточка удалена' });
+          })
+          .catch((err) => {
+            if (err instanceof mongoose.Error.DocumentNotFoundError) {
+              next(new NotFoundError(`Карточка с таким id ${req.params.cardId} не найдена`));
+            } else if (err instanceof mongoose.Error.CastError) {
+              next(new BadRequestError(`Неккоректный id карточки ${req.params.cardId}`));
+            } else {
+              next(err);
+            }
+          });
       }
-      Card.deleteOne(card)
-        .orFail()
-        .then(() => {
-          res.status(httpConstants.HTTP_STATUS_OK).send({ message: 'Карточка удалена' });
-        })
-        .catch((err) => {
-          if (err instanceof mongoose.Error.DocumentNotFoundError) {
-            next(new NotFoundError(`Карточка с таким id ${req.params.cardId} не найдена`));
-          } else if (err instanceof mongoose.Error.CastError) {
-            next(new BadRequestError(`Неккоректный id карточки ${req.params.cardId}`));
-          } else {
-            next(err);
-          }
-        });
     }))
     .catch((err) => {
       if (err.name === 'TypeError') {
         next(new NotFoundError('Карточка не найдена'));
+      } else if (err instanceof mongoose.Error.CastError) {
+        next(new BadRequestError('Неккоректный id карточки'));
       } else {
         next(err);
       }
@@ -79,7 +67,6 @@ module.exports.likeCard = (req, res, next) => {
     { new: true },
   )
     .orFail()
-    .populate(['owner', 'likes'])
     .then((card) => {
       res.status(httpConstants.HTTP_STATUS_OK).send(card);
     })

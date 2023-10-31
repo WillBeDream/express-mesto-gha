@@ -28,8 +28,9 @@ module.exports.getUserById = (req, res, next) => {
             `Пользователь по указанному id ${req.params.userId} не найден`,
           ),
         );
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
